@@ -1,7 +1,6 @@
 import os
 import Evaluate
-import scipy
-import tkMessageBox
+import cv2
 import sys
 
 def Utility(GT_path, evaluated_path):
@@ -25,7 +24,6 @@ def Utility(GT_path, evaluated_path):
     m_MSSSIM = 0
     m_PSNR = 0
     m_CQM = 0
-    ipdb.set_trace()
     for category in category_list:
         print(category)
         c_AGE = 0
@@ -57,15 +55,14 @@ def Utility(GT_path, evaluated_path):
                     #if more than one GT exists for the video, we keep the
                     #metrics with the highest MSSSIM value.
                     
-                    GT_img = scipy.misc.imread(os.path.join(GT_video_path, file))       #background ground truth
+                    GT_img = cv2.imread(os.path.join(GT_video_path, file))       #background ground truth
                     evaluated_video_path = os.path.join(evaluated_category_path, video)
                     files = os.listdir(os.path.join(evaluated_video_path))       
 
                     for file in files:              #read the first image in the video folder
                         if file.endswith('.jpg'):
-                            result_img = scipy.misc.imread(os.path.join(evaluated_video_path, file))
+                            result_img = cv2.imread(os.path.join(evaluated_video_path, file))
                             break
-                    ipdb.set_trace()
 
                     AGE, pEPs, pCEPs, MSSSIM, PSNR, CQM = Evaluate.Evaluate(GT_img, result_img);
                     if MSSSIM > MSSSIM_max:
