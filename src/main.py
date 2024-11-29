@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
                 imgArr = np.array(imgArr)
 
-                imgBg = bgFunc(imgArr).astype(np.uint8)
+                imgBg = bgFunc(imgArr)
                 os.makedirs(os.path.join(resultsPath, method, category, video), exist_ok=True)
                 cv2.imwrite(os.path.join(resultsPath, method, category, video, 'result.jpg'), imgBg)
                 bar()
