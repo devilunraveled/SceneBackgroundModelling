@@ -157,6 +157,59 @@ def gmm_background_subtraction(imgArr):
 
     return fgmask
 
+def opticalFlowAvg(imgArr):
+    """
+    Apply optical flow to an image array.
+    """
+    bgMaskSum = np.zeros(imgArr[0].shape)
+    maskedImgSum = np.zeros(imgArr[0].shape)
+
+    for i in range(1, imgArr.shape[0]):
+        prev = cv2.cvtColor(imgArr[i - 1], cv2.COLOR_BGR2GRAY)
+        next = cv2.cvtColor(imgArr[i], cv2.COLOR_BGR2GRAY)
+
+        flowImg = cv2.calcOpticalFlowFarneback(prev, next, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+        flowImg = np.linalg.norm(flowImg, axis=-1)
+        flowImg = cv2.normalize(flowImg, None, 0, 255, cv2.NORM_MINMAX)
+        bgMask = np.where(flowImg == 0, 0, 1)
+        bgMask = np.expand_dims(bgMask, axis=-1)
+        bgMaskSum += bgMask
+        maskedImgSum += imgArr[i] * bgMask
+
+    maskedAvg = maskedImgSum / bgMaskSum
+    maskedAvg = np.nan_to_num(maskedAvg, nan=0).astype(np.uint8)
+
+    return maskedAvg.astype(np.uint8)
+
+def opticalFlowMedian(imgArr):
+    """
+    Apply optical flow to an image array.
+    """
+    maskedImgArr = imgArr.copy()
+
+    for i in range(1, imgArr.shape[0]):
+        prev = cv2.cvtColor(imgArr[i - 1], cv2.COLOR_BGR2GRAY)
+        next = cv2.cvtColor(imgArr[i], cv2.COLOR_BGR2GRAY)
+
+        flowImg = cv2.calcOpticalFlowFarneback(prev, next, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+        flowImg = np.linalg.norm(flowImg, axis=-1)
+        flowImg = cv2.normalize(flowImg, None, 0, 255, cv2.NORM_MINMAX)
+        bgMask = np.where(flowImg == 0, 0, 1)
+        bgMask = np.expand_dims(bgMask, axis=-1)
+        maskedImgArr[i] = imgArr[i] * bgMask
+
+    maskedMedian = np.zeros(imgArr[0].shape)
+    for i in range(imgArr[0].shape[0]):
+        for j in range(imgArr[0].shape[1]):
+            for k in range(imgArr[0].shape[2]):
+                maskedValues = maskedImgArr[:, i, j, k][maskedImgArr[:, i, j, k] != 0]
+                if len(maskedValues) == 0:
+                    maskedMedian[i, j, k] = 0
+                else:
+                    maskedMedian[i, j, k] = np.median(maskedValues)
+
+    return maskedMedian.astype(np.uint8)
+
 def pool(imgArr, pooling_method='mean'):
     """
     Apply various background modeling techniques and pool their results.
