@@ -156,3 +156,34 @@ def gmm_background_subtraction(imgArr):
     fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, kernel)
 
     return fgmask
+
+def pool(imgArr, pooling_method='mean'):
+    """
+    Apply various background modeling techniques and pool their results.
+
+    Parameters:
+        imgArr (numpy.ndarray): Array of images (frames) to process.
+        pooling_method (str): The pooling method to use ('average', 'max').
+
+    Returns:
+        numpy.ndarray: The pooled background model image.
+    """
+    # Apply all background modeling techniques
+    avg_result = average(imgArr)
+    median_result = median(imgArr)
+    mode_result = mode(imgArr)
+    most_freq_result = mostFreq(imgArr)
+    gmm_result = gmm_background_subtraction(imgArr)
+
+    # Stack all results into a single array for pooling
+    results = np.array([avg_result, median_result, mode_result, most_freq_result, gmm_result])
+
+    # Apply the specified pooling method
+    if pooling_method == 'mean':
+        pooled_result = np.mean(results, axis=0).astype(np.uint8)
+    elif pooling_method == 'max':
+        pooled_result = np.max(results, axis=0).astype(np.uint8)
+    else:
+        raise ValueError("Invalid pooling method. Choose 'average' or 'max'.")
+
+    return pooled_result

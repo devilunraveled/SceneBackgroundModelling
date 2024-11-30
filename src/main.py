@@ -29,8 +29,12 @@ if __name__ == '__main__':
                     imgArr.append(cv2.imread(os.path.join(videoPath, img)))
 
                 imgArr = np.array(imgArr)
-
-                imgBg = bgFunc(imgArr)
+                
+                if method == 'pool' :
+                    poolerType = sys.argv[2]
+                    imgBg = bgFunc(imgArr, poolerType)
+                else :
+                    imgBg = bgFunc(imgArr)
                 os.makedirs(os.path.join(resultsPath, method, category, video), exist_ok=True)
                 cv2.imwrite(os.path.join(resultsPath, method, category, video, 'result.jpg'), imgBg)
                 bar()
