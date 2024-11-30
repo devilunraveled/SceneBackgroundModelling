@@ -51,7 +51,7 @@ def percentileAverage(imgArr, percentile=50):
 
 def frameDifferenceAvg(imgArr, diffThreshold=30):
     """
-    Mask the foreground using frame difference of an image array.
+    Mask the foreground using frame difference of an image array and take average.
     """
     bgMaskSum = np.zeros(imgArr[0].shape)
     maskedImgSum = np.zeros(imgArr[0].shape)
@@ -69,3 +69,55 @@ def frameDifferenceAvg(imgArr, diffThreshold=30):
     maskedAvg = np.nan_to_num(maskedAvg, nan=0).astype(np.uint8)
 
     return maskedAvg.astype(np.uint8)
+
+def frameDifferenceMedian(imgArr, diffThreshold=30):
+    """
+    Mask the foreground using frame difference of an image array and take median.
+    """
+    maskedImgArr = imgArr.copy()
+
+    for i in range(1, imgArr.shape[0]):
+        diffImg = cv2.absdiff(imgArr[i], imgArr[i - 1])
+        diffImg = cv2.cvtColor(diffImg, cv2.COLOR_BGR2GRAY)
+        _, diffImg = cv2.threshold(diffImg, diffThreshold, 255, cv2.THRESH_BINARY)
+        bgMask = np.where(diffImg == 255, 0, 1)
+        bgMask = np.expand_dims(bgMask, axis=-1)
+        maskedImgArr[i] = imgArr[i] * bgMask
+
+    maskedMedian = np.zeros(imgArr[0].shape)
+    for i in range(imgArr[0].shape[0]):
+        for j in range(imgArr[0].shape[1]):
+            for k in range(imgArr[0].shape[2]):
+                maskedValues = maskedImgArr[:, i, j, k][maskedImgArr[:, i, j, k] != 0]
+                if len(maskedValues) == 0:
+                    maskedMedian[i, j, k] = 0
+                else:
+                    maskedMedian[i, j, k] = np.median(maskedValues)
+
+    return maskedMedian.astype(np.uint8)
+
+def frameDifferenceMostFreq(imgArr, diffThreshold=30):
+    """
+    Mask the foreground using frame difference of an image array and take most frequent pixel values.
+    """
+    mostFreq = np.zeros(imgArr[0].shape, dtype=np.uint8)
+    maskedImgArr = imgArr.copy()
+
+    for i in range(1, imgArr.shape[0]):
+        diffImg = cv2.absdiff(imgArr[i], imgArr[i - 1])
+        diffImg = cv2.cvtColor(diffImg, cv2.COLOR_BGR2GRAY)
+        _, diffImg = cv2.threshold(diffImg, diffThreshold, 255, cv2.THRESH_BINARY)
+        bgMask = np.where(diffImg == 255, 0, 1)
+        bgMask = np.expand_dims(bgMask, axis=-1)
+        maskedImgArr[i] = imgArr[i] * bgMask
+
+    for i in range(imgArr[0].shape[0]):
+        for j in range(imgArr[0].shape[1]):
+            for k in range(imgArr[0].shape[2]):
+                freq = np.bincount(maskedImgArr[:, i, j, k][maskedImgArr[:, i, j, k] != 0])
+                if len(freq) == 0:
+                    mostFreq[i, j, k] = 0
+                else:
+                    mostFreq[i, j, k] = np.argmax(freq)
+
+    return mostFreq
