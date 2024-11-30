@@ -1,6 +1,6 @@
-from collections.abc import Callable
 import numpy as np
 import cv2
+from scipy.stats import mode as ScipyMode
 
 def average(imgArr):
     """
@@ -219,8 +219,14 @@ def pool(imgArr, candiadateFuncs, pooling_method='mean'):
     # Apply the specified pooling method
     if pooling_method == 'mean':
         pooled_result = np.mean(results, axis=0).astype(np.uint8)
-    elif pooling_method == 'max':
-        pooled_result = np.max(results, axis=0).astype(np.uint8)
+    elif pooling_method == 'mode':
+            # Compute the mode along the axis of methods
+            mode_result, _ = ScipyMode(results, axis=0, keepdims=False)
+            pooled_result = mode_result.squeeze().astype(np.uint8)
+
+            # Handle ties: use the value from the last function
+            ties_mask = np.sum(results == mode_result, axis=0) > 1  # Check for ties
+            pooled_result[ties_mask] = results[-1][ties_mask]
     else:
         raise ValueError("Invalid pooling method. Choose 'average' or 'max'.")
 
