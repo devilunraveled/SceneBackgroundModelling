@@ -121,3 +121,36 @@ def frameDifferenceMostFreq(imgArr, diffThreshold=30):
                     mostFreq[i, j, k] = np.argmax(freq)
 
     return mostFreq
+
+def gmm_background_subtraction(imgArr):
+    """
+    Apply Gaussian Mixture Model (GMM) for background subtraction.
+    
+    Parameters:
+        imgArr (numpy.ndarray): Array of images (frames) to process.
+        
+    Returns:
+        numpy.ndarray: The background model image.
+    """
+    # Create a Background Subtractor object using MOG2
+    fgbg = cv2.createBackgroundSubtractorMOG2(history=100, varThreshold=10, detectShadows=True)
+
+    # Initialize an empty image to accumulate the foreground mask
+    fgmask = np.zeros(imgArr[0].shape, dtype=np.uint8)
+
+    # Process each frame in the image array
+    for frame in imgArr:
+        # Apply Gaussian blur to reduce noise and improve segmentation
+        blurFrame = cv2.GaussianBlur(frame, (9, 9), 0)
+        
+        # Apply the background subtractor to get the foreground mask
+        mask = fgbg.apply(blurFrame)
+        
+        # Accumulate the foreground mask
+        fgmask = cv2.bitwise_or(fgmask, mask)
+
+    # Optionally apply morphological operations to clean up the mask
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+    fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, kernel)
+
+    return fgmask
