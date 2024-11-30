@@ -32,7 +32,10 @@ if __name__ == '__main__':
                 
                 if method == 'pool' :
                     poolerType = sys.argv[2]
-                    imgBg = bgFunc(imgArr, poolerType)
+                    poolerMethodNames = sys.argv[3:]
+                    candidateFuncs = [ getattr(bgModels, methodName) for methodName in poolerMethodNames ]
+
+                    imgBg = bgFunc(imgArr, candidateFuncs, poolerType)
                 else :
                     imgBg = bgFunc(imgArr)
                 os.makedirs(os.path.join(resultsPath, method, category, video), exist_ok=True)

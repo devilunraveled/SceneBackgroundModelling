@@ -1,3 +1,4 @@
+from collections.abc import Callable
 import numpy as np
 import cv2
 
@@ -122,7 +123,7 @@ def frameDifferenceMostFreq(imgArr, diffThreshold=30):
 
     return mostFreq
 
-def gmm_background_subtraction(imgArr):
+def gmm(imgArr):
     """
     Apply Gaussian Mixture Model (GMM) for background subtraction.
     
@@ -157,7 +158,7 @@ def gmm_background_subtraction(imgArr):
 
     return fgmask
 
-def pool(imgArr, pooling_method='mean'):
+def pool(imgArr, candiadateFuncs : list[Callable], pooling_method='mean'):
     """
     Apply various background modeling techniques and pool their results.
 
@@ -168,15 +169,8 @@ def pool(imgArr, pooling_method='mean'):
     Returns:
         numpy.ndarray: The pooled background model image.
     """
-    # Apply all background modeling techniques
-    avg_result = average(imgArr)
-    median_result = median(imgArr)
-    mode_result = mode(imgArr)
-    most_freq_result = mostFreq(imgArr)
-    gmm_result = gmm_background_subtraction(imgArr)
-
     # Stack all results into a single array for pooling
-    results = np.array([avg_result, median_result, mode_result, most_freq_result, gmm_result])
+    results = np.array([func(imgArr) for func in candiadateFuncs])
 
     # Apply the specified pooling method
     if pooling_method == 'mean':
