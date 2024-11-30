@@ -6,8 +6,10 @@ from alive_progress import alive_bar
 import sys
 
 dataPath = 'data/SBMnet_dataset'
-category = 'illuminationChanges'
-video = 'CameraParameter'
+# category = 'illuminationChanges'
+# video = 'CameraParameter'
+category = 'backgroundMotion'
+video = 'fall'
 
 if __name__ == '__main__':
     """

@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.cluster import KMeans
+import cv2
 
 def average(imgArr):
     """
@@ -48,3 +48,24 @@ def percentileAverage(imgArr, percentile=50):
     percentileAvg = np.mean(sortedImgArr[removeCount:-removeCount], axis=0)
 
     return percentileAvg.astype(np.uint8)
+
+def frameDifferenceAvg(imgArr, diffThreshold=30):
+    """
+    Mask the foreground using frame difference of an image array.
+    """
+    bgMaskSum = np.zeros(imgArr[0].shape)
+    maskedImgSum = np.zeros(imgArr[0].shape)
+
+    for i in range(1, imgArr.shape[0]):
+        diffImg = cv2.absdiff(imgArr[i], imgArr[i - 1])
+        diffImg = cv2.cvtColor(diffImg, cv2.COLOR_BGR2GRAY)
+        _, diffImg = cv2.threshold(diffImg, diffThreshold, 255, cv2.THRESH_BINARY)
+        bgMask = np.where(diffImg == 255, 0, 1)
+        bgMask = np.expand_dims(bgMask, axis=-1)
+        bgMaskSum += bgMask
+        maskedImgSum += imgArr[i] * bgMask
+
+    maskedAvg = maskedImgSum / bgMaskSum
+    maskedAvg = np.nan_to_num(maskedAvg, nan=0).astype(np.uint8)
+
+    return maskedAvg.astype(np.uint8)
