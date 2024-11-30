@@ -145,7 +145,9 @@ def gmm_background_subtraction(imgArr):
         
         # Apply the background subtractor to get the foreground mask
         mask = fgbg.apply(blurFrame)
+        mask = np.stack((mask,) * 3, axis=-1)
         
+        # print(mask.shape, fgmask.shape)
         # Accumulate the foreground mask
         fgmask = cv2.bitwise_or(fgmask, mask)
 
