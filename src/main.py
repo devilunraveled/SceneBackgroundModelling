@@ -36,7 +36,7 @@ if __name__ == '__main__':
                     candidateFuncs = [ getattr(bgModels, methodName) for methodName in poolerMethodNames ]
                     imgBg = bgFunc(imgArr, candidateFuncs, poolerType)
                     os.makedirs(os.path.join(resultsPath, f"{poolerType}_pool_{'_'.join(poolerMethodNames)}", category, video), exist_ok=True)
-                    cv2.imwrite(os.path.join(resultsPath, method, category, video, 'result.jpg'), imgBg)
+                    cv2.imwrite(os.path.join(resultsPath, f"{poolerType}_pool_{'_'.join(poolerMethodNames)}", category, video, 'result.jpg'), imgBg)
                 else :
                     imgBg = bgFunc(imgArr)
                     os.makedirs(os.path.join(resultsPath, method, category, video), exist_ok=True)
