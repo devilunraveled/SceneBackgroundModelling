@@ -27,6 +27,4 @@ if __name__ == '__main__':
     imgArr = np.array(imgArr)
 
     imgBg = bgFunc(imgArr)
-    print(max(imgBg.flatten()))
-    # imgBg = imgBg.astype(np.uint8)
     cv2.imwrite('result.jpg', imgBg)
