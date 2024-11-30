@@ -128,35 +128,26 @@ def gmm(imgArr):
     Apply Gaussian Mixture Model (GMM) for background subtraction.
     
     Parameters:
-        imgArr (numpy.ndarray): Array of images (frames) to process.
+        imgArr (list of np.ndarray): List of images (frames) to process.
         
     Returns:
-        numpy.ndarray: The background model image.
+        np.ndarray: The background model image.
     """
     # Create a Background Subtractor object using MOG2
     fgbg = cv2.createBackgroundSubtractorMOG2(history=100, varThreshold=10, detectShadows=True)
-
-    # Initialize an empty image to accumulate the foreground mask
-    fgmask = np.zeros(imgArr[0].shape, dtype=np.uint8)
 
     # Process each frame in the image array
     for frame in imgArr:
         # Apply Gaussian blur to reduce noise and improve segmentation
         blurFrame = cv2.GaussianBlur(frame, (9, 9), 0)
         
-        # Apply the background subtractor to get the foreground mask
-        mask = fgbg.apply(blurFrame)
-        mask = np.stack((mask,) * 3, axis=-1)
-        
-        # print(mask.shape, fgmask.shape)
-        # Accumulate the foreground mask
-        fgmask = cv2.bitwise_or(fgmask, mask)
+        # Apply the background subtractor
+        fgbg.apply(blurFrame)
 
-    # Optionally apply morphological operations to clean up the mask
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-    fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, kernel)
+    # Retrieve the computed background image
+    background = fgbg.getBackgroundImage()
 
-    return fgmask
+    return background
 
 def opticalFlowAvg(imgArr):
     """
