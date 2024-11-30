@@ -65,7 +65,7 @@ def frameDifferenceAvg(imgArr, diffThreshold=30):
         bgMask = np.expand_dims(bgMask, axis=-1)
         bgMaskSum += bgMask
         maskedImgSum += imgArr[i] * bgMask
-
+    
     maskedAvg = maskedImgSum / bgMaskSum
     maskedAvg = np.nan_to_num(maskedAvg, nan=0).astype(np.uint8)
 
