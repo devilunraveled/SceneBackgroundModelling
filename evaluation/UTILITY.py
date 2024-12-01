@@ -2,6 +2,7 @@ import os
 import Evaluate
 import cv2
 import sys
+import pandas as pd
 
 def Utility(GT_path, evaluated_path):
     '''
@@ -14,6 +15,8 @@ def Utility(GT_path, evaluated_path):
                         'intermittentMotion', 'jitter', 'veryLong', 'veryShort']
     category_num = len(category_list)
     result_file = os.path.join(evaluated_path, 'cm.txt')
+    resultDataFrameFile = os.path.join(evaluated_path, 'result.csv')
+    results = [] 
 
     with open(result_file, 'w') as fid:
         fid.write('\t\tvideo\tAGE\tpEPs\tpCEPs\tMSSSIM\tPSNR\tCQM\r\n')
@@ -96,6 +99,16 @@ def Utility(GT_path, evaluated_path):
         #save the category evaluation results
         with open(result_file, 'a+') as fid:
             fid.write('\r\n' + category[0 : min(8, len(category))] + '_AVG::\t\t' + str(round(c_AGE, 4))+ '\t' + str(round(c_pEPs, 4)) + '\t' + str(round(c_pCEPs, 4)) + '\t' + str(round(c_MSSSIM, 4)) + '\t' + str(round(c_PSNR, 4)) + '\t' + str(round(c_CQM, 4)) + '\r\n\r\n')
+        
+        results.append({
+            'category': category,
+            'AGE': round(c_AGE, 4),
+            'pEPs': round(c_pEPs, 4),
+            'pCEPs': round(c_pCEPs, 4),
+            'MSSSIM': round(c_MSSSIM, 4),
+            'PSNR': round(c_PSNR, 4),
+            'CQM': round(c_CQM, 4)
+            })
 
         m_AGE = m_AGE + c_AGE
         m_pEPs = m_pEPs + c_pEPs
@@ -114,6 +127,9 @@ def Utility(GT_path, evaluated_path):
 
     with open(result_file, 'a+') as fid:
         fid.write('Total:\t\t\t' + str(round(m_AGE, 4))+ '\t' + str(round(m_pEPs, 4)) + '\t' + str(round(m_pCEPs, 4)) + '\t' + str(round(m_MSSSIM, 4)) + '\t' + str(round(m_PSNR, 4)) + '\t' + str(round(m_CQM, 4)) + '\r\n')
+    
+    results = pd.DataFrame(results)
+    results.to_csv(resultDataFrameFile)
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
